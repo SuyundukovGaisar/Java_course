@@ -1,32 +1,37 @@
 package ru.marketplace.catalog.service;
 
 import ru.marketplace.catalog.model.User;
+import ru.marketplace.catalog.repository.UserRepository;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
-/**
- * Стандартная реализация сервиса для управления пользователями.
- */
 public class UserServiceImpl implements UserService {
-    private final Map<String, User> users = new HashMap<>();
+
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public boolean registerUser(String login, String password) {
-        if (users.containsKey(login)) {
+        if (userRepository.existsByLogin(login)) {
             return false;
         }
-        users.put(login, new User(login, password));
+
+        User newUser = new User(login, password);
+        userRepository.save(newUser);
         return true;
     }
 
     @Override
     public Optional<User> loginUser(String login, String password) {
-        User user = users.get(login);
-        if (user != null && user.getPassword().equals(password)) {
-            return Optional.of(user);
+        Optional<User> userOpt = userRepository.findByLogin(login);
+
+        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+            return userOpt;
         }
+
         return Optional.empty();
     }
 }

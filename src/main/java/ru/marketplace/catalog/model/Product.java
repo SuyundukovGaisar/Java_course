@@ -1,37 +1,33 @@
 package ru.marketplace.catalog.model;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-
 
 /**
  * Модель данных, представляющая товар в каталоге.
- * Каждый товар имеет уникальный, автоматически генерируемый ID.
+ * ID управляется базой данных.
  */
 public class Product {
-    private static final AtomicLong idGenerator = new AtomicLong(0);
-
-    private final long id;
+    private long id; // Убираем final, добавляем сеттер
     private String category;
     private String brand;
     private int price;
 
-    /**
-     * Создает новый экземпляр товара с уникальным ID.
-     * @param category категория товара.
-     * @param brand    бренд товара.
-     * @param price    цена товара.
-     */
     public Product(String category, String brand, int price) {
-        this.id = idGenerator.incrementAndGet();
         this.category = category;
         this.brand = brand;
         this.price = price;
     }
 
-    public long getId() {
-        return id;
+    public Product(long id, String category, String brand, int price) {
+        this.id = id;
+        this.category = category;
+        this.brand = brand;
+        this.price = price;
     }
+
+    public long getId() { return id; }
+
+    public void setId(long id) { this.id = id; }
 
     public String getCategory() {
         return category;
