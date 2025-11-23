@@ -1,7 +1,8 @@
 import org.junit.jupiter.api.*;
 import ru.marketplace.catalog.model.User;
+import ru.marketplace.catalog.repository.UserRepository;
 import ru.marketplace.catalog.service.UserService;
-import ru.marketplace.catalog.service.UserServiceImpl;
+import ru.marketplace.catalog.service.impl.UserServiceImpl;
 
 import java.util.Optional;
 
@@ -11,7 +12,24 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl();
+        UserRepository dummyRepo = new UserRepository() {
+            @Override
+            public void save(User user) {
+                // Ничего не делаем, это просто тест
+            }
+
+            @Override
+            public Optional<User> findByLogin(String login) {
+                return Optional.empty();
+            }
+
+            @Override
+            public boolean existsByLogin(String login) {
+                return false;
+            }
+        };
+
+        userService = new UserServiceImpl(dummyRepo);
     }
 
     @Test

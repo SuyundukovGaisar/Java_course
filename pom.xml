@@ -12,7 +12,6 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Выносим версии в properties для удобного управления -->
         <junit.version>5.9.1</junit.version>
         <testcontainers.version>1.17.6</testcontainers.version>
     </properties>

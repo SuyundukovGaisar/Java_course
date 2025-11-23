@@ -3,12 +3,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.marketplace.catalog.model.Product;
-import ru.marketplace.catalog.repository.InMemoryProductRepository;
+import ru.marketplace.catalog.repository.impl.InMemoryProductRepository;
 import ru.marketplace.catalog.repository.ProductRepository;
 import ru.marketplace.catalog.service.ProductService;
-import ru.marketplace.catalog.service.ProductServiceImpl;
+import ru.marketplace.catalog.service.impl.ProductServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 class ProductServiceImplTest {
 
@@ -17,8 +19,24 @@ class ProductServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        productRepository = new InMemoryProductRepository();
-        productService = new ProductServiceImpl(productRepository);
+        ProductRepository dummyRepo = new ProductRepository() {
+            @Override
+            public void save(Product product) {}
+
+            @Override
+            public List<Product> findAll() { return new ArrayList<>(); }
+
+            @Override
+            public Optional<Product> findById(long id) { return Optional.empty(); }
+
+            @Override
+            public boolean deleteById(long id) { return true; }
+
+            @Override
+            public boolean existsById(long id) { return false; }
+        };
+
+        productService = new ProductServiceImpl(dummyRepo);
     }
 
     @Test

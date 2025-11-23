@@ -81,4 +81,14 @@ public class ConsoleView {
             }
         }
     }
+
+    public void displayAuditLog(List<String> auditLog) {
+        System.out.println("--- Audit Log ---");
+        if (auditLog.isEmpty()) {
+            System.out.println("Log is empty.");
+        } else {
+            auditLog.forEach(System.out::println);
+        }
+        System.out.println("-----------------");
+    }
 }

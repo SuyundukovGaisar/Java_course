@@ -8,5 +8,6 @@
     <include file="db/changelog/changeset/002-create-products-table.xml"/>
     <include file="db/changelog/changeset/003-create-users-table.xml"/>
     <include file="db/changelog/changeset/004-insert-initial-data.xml"/>
+    <include file="changeset/005-create-audit-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

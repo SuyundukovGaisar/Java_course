@@ -1,6 +1,8 @@
-package ru.marketplace.catalog.repository;
+package ru.marketplace.catalog.repository.impl;
 
 import ru.marketplace.catalog.model.Product;
+import ru.marketplace.catalog.repository.ProductRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

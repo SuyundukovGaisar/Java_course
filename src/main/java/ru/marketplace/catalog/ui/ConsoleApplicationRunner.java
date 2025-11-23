@@ -1,11 +1,10 @@
-package ru.marketplace.catalog.controller;
+package ru.marketplace.catalog.ui;
 
 import ru.marketplace.catalog.model.Product;
 import ru.marketplace.catalog.model.User;
 import ru.marketplace.catalog.service.AuditService;
 import ru.marketplace.catalog.service.ProductService;
 import ru.marketplace.catalog.service.UserService;
-import ru.marketplace.catalog.ui.ConsoleView;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,14 +13,15 @@ import java.util.Optional;
  * Главный контроллер приложения (слой Controller).
  * Управляет логикой, жизненным циклом и взаимодействием между сервисами и представлением.
  */
-public class MarketplaceController {
+public class ConsoleApplicationRunner {
     private final ConsoleView view;
     private final UserService userService;
     private final ProductService productService;
     private final AuditService auditService;
     private User currentUser = null;
 
-    public MarketplaceController(ConsoleView view, UserService userService, ProductService productService, AuditService auditService) {
+    // В конструкторе тоже принимаем интерфейс AuditService
+    public ConsoleApplicationRunner(ConsoleView view, UserService userService, ProductService productService, AuditService auditService) {
         this.view = view;
         this.userService = userService;
         this.productService = productService;
@@ -73,7 +73,6 @@ public class MarketplaceController {
             currentUser = userOpt.get();
             auditService.logAction(currentUser.getLogin(), "Logged in");
             view.showMessage("Вход выполнен успешно. Добро пожаловать, " + currentUser.getLogin() + "!");
-            // Вот он, переход в другое состояние!
             runMarketplaceMenu();
         } else {
             view.showMessage("Неверный логин или пароль.");
@@ -101,7 +100,10 @@ public class MarketplaceController {
                 case 3 -> updateProduct();
                 case 4 -> deleteProduct();
                 case 5 -> filterProducts();
-                case 6 -> auditService.printAuditLog();
+                case 6 -> {
+                    List<String> log = auditService.getAuditLog();
+                    view.displayAuditLog(log);
+                }
                 case 7 -> {
                     auditService.logAction(currentUser.getLogin(), "Logged out");
                     currentUser = null;

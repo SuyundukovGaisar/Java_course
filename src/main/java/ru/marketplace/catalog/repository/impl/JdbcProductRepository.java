@@ -1,7 +1,9 @@
-package ru.marketplace.catalog.repository;
+package ru.marketplace.catalog.repository.impl;
 
 import ru.marketplace.catalog.db.ConnectionFactory;
 import ru.marketplace.catalog.model.Product;
+import ru.marketplace.catalog.repository.ProductRepository;
+import ru.marketplace.catalog.exception.RepositoryException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,9 +18,12 @@ public class JdbcProductRepository implements ProductRepository {
     private final ConnectionFactory connectionFactory;
 
     private static final String FIND_ALL_SQL = "SELECT id, category, brand, price FROM marketplace.products";
-    private static final String FIND_BY_ID_SQL = "SELECT id, category, brand, price FROM marketplace.products WHERE id = ?";
-    private static final String SAVE_SQL = "INSERT INTO marketplace.products (category, brand, price) VALUES (?, ?, ?)";
-    private static final String UPDATE_SQL = "UPDATE marketplace.products SET category = ?, brand = ?, price = ? WHERE id = ?";
+    private static final String FIND_BY_ID_SQL = "SELECT id, category, brand, price FROM marketplace.products" +
+            " WHERE id = ?";
+    private static final String SAVE_SQL = "INSERT INTO marketplace.products (category, brand, price) " +
+            "VALUES (?, ?, ?)";
+    private static final String UPDATE_SQL = "UPDATE marketplace.products SET category = ?," +
+            " brand = ?, price = ? WHERE id = ?";
     private static final String DELETE_BY_ID_SQL = "DELETE FROM marketplace.products WHERE id = ?";
     private static final String EXISTS_BY_ID_SQL = "SELECT 1 FROM marketplace.products WHERE id = ?";
 
@@ -27,10 +32,11 @@ public class JdbcProductRepository implements ProductRepository {
     }
 
     @Override
-    public void save(Product product) {
+    public void save(Product product) throws RepositoryException {
         if (product.getId() == 0) {
             try (Connection connection = connectionFactory.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                 PreparedStatement statement = connection.prepareStatement(SAVE_SQL,
+                         Statement.RETURN_GENERATED_KEYS)) {
 
                 statement.setString(1, product.getCategory());
                 statement.setString(2, product.getBrand());
@@ -43,7 +49,7 @@ public class JdbcProductRepository implements ProductRepository {
                 }
 
             } catch (SQLException e) {
-                throw new RuntimeException("Ошибка при сохранении продукта", e);
+                throw new RepositoryException("Ошибка при сохранении продукта", e);
             }
         } else {
             try (Connection connection = connectionFactory.getConnection();
@@ -56,13 +62,13 @@ public class JdbcProductRepository implements ProductRepository {
                 statement.executeUpdate();
 
             } catch (SQLException e) {
-                throw new RuntimeException("Ошибка при обновлении продукта", e);
+                throw new RepositoryException("Ошибка при обновлении продукта", e);
             }
         }
     }
 
     @Override
-    public List<Product> findAll() {
+    public List<Product> findAll() throws RepositoryException {
         List<Product> products = new ArrayList<>();
         try (Connection connection = connectionFactory.getConnection();
              Statement statement = connection.createStatement();
@@ -72,13 +78,13 @@ public class JdbcProductRepository implements ProductRepository {
                 products.add(mapRowToProduct(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка при получении всех продуктов", e);
+            throw new RepositoryException("Ошибка при получении всех продуктов", e);
         }
         return products;
     }
 
     @Override
-    public Optional<Product> findById(long id) {
+    public Optional<Product> findById(long id) throws RepositoryException {
         try (Connection connection = connectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(FIND_BY_ID_SQL)) {
 
@@ -89,13 +95,13 @@ public class JdbcProductRepository implements ProductRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка при поиске продукта по ID", e);
+            throw new RepositoryException("Ошибка при поиске продукта по ID", e);
         }
         return Optional.empty();
     }
 
     @Override
-    public boolean deleteById(long id) {
+    public boolean deleteById(long id) throws RepositoryException {
         try (Connection connection = connectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(DELETE_BY_ID_SQL)) {
 
@@ -104,12 +110,12 @@ public class JdbcProductRepository implements ProductRepository {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка при удалении продукта", e);
+            throw new RepositoryException("Ошибка при удалении продукта", e);
         }
     }
 
     @Override
-    public boolean existsById(long id) {
+    public boolean existsById(long id) throws RepositoryException {
         try (Connection connection = connectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(EXISTS_BY_ID_SQL)) {
 
@@ -118,7 +124,7 @@ public class JdbcProductRepository implements ProductRepository {
                 return rs.next();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка при проверке существования продукта", e);
+            throw new RepositoryException("Ошибка при проверке существования продукта", e);
         }
     }
 

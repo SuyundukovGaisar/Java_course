@@ -36,4 +36,25 @@ public interface DatabaseConfig extends Config {
      */
     @Key("liquibase.changelog.path")
     String liquibaseChangelogPath();
+
+    /**
+     * Возвращает имя схемы для служебных таблиц Liquibase.
+     * @return имя схемы.
+     */
+    @Key("db.schema.service")
+    String liquibaseSchema();
+
+    /**
+     * Возвращает имя схемы для данных приложения.
+     * @return имя схемы.
+     */
+    @Key("db.schema.data")
+    String dataSchema();
+
+    /**
+     * Тип хранилища: "jdbc" или "memory".
+     */
+    @Key("app.repository.type")
+    @DefaultValue("jdbc")
+    String repositoryType();
 }
