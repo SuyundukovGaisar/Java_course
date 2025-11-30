@@ -1,17 +1,14 @@
+package ru.marketplace.catalog.service.impl;
+
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.marketplace.catalog.aop.AuditAspect;
-import ru.marketplace.catalog.exception.RepositoryException;
 import ru.marketplace.catalog.model.Product;
 import ru.marketplace.catalog.repository.ProductRepository;
-import ru.marketplace.catalog.service.AuditService;
-import ru.marketplace.catalog.service.impl.ProductServiceImpl;
 
 import java.util.List;
 
@@ -23,20 +20,12 @@ class ProductServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
-    @Mock
-    private AuditService auditService;
-
     @InjectMocks
     private ProductServiceImpl productService;
 
-    @BeforeEach
-    void setUp() {
-        AuditAspect.setAuditService(auditService);
-    }
-
     @Test
     @DisplayName("Добавление продукта должно вызывать метод репозитория")
-    void addProduct_shouldCallRepository() throws RepositoryException {
+    void addProduct_shouldCallRepository() {
         Product product = new Product("Electronics", "Sony", 100);
 
         productService.addProduct(product);
@@ -46,7 +35,7 @@ class ProductServiceImplTest {
 
     @Test
     @DisplayName("Получение всех продуктов должно возвращать список из репозитория")
-    void getAllProducts_shouldReturnList() throws RepositoryException {
+    void getAllProducts_shouldReturnList() {
         List<Product> mockList = List.of(
                 new Product(1L, "Cat1", "Brand1", 100),
                 new Product(2L, "Cat1", "Brand2", 200)
@@ -62,7 +51,7 @@ class ProductServiceImplTest {
 
     @Test
     @DisplayName("Удаление продукта должно возвращать результат из репозитория")
-    void deleteProduct_shouldReturnTrue_whenRepoReturnsTrue() throws RepositoryException {
+    void deleteProduct_shouldReturnTrue_whenRepoReturnsTrue() {
         when(productRepository.deleteById(1L)).thenReturn(true);
 
         boolean result = productService.deleteProduct(1L);

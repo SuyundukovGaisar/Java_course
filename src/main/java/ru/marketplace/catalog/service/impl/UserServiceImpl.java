@@ -1,8 +1,8 @@
 package ru.marketplace.catalog.service.impl;
 
+import org.springframework.stereotype.Service;
 import ru.marketplace.catalog.aop.annotations.Auditable;
 import ru.marketplace.catalog.aop.annotations.Loggable;
-import ru.marketplace.catalog.exception.RepositoryException;
 import ru.marketplace.catalog.model.User;
 import ru.marketplace.catalog.repository.UserRepository;
 import ru.marketplace.catalog.service.UserService;
@@ -10,9 +10,10 @@ import ru.marketplace.catalog.service.UserService;
 import java.util.Optional;
 
 /**
- * Реализация сервиса управления пользователями.
- * Обеспечивает регистрацию и вход в систему.
+ * Реализация сервиса пользователей.
+ * Управляет регистрацией и входом.
  */
+@Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -21,55 +22,28 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Регистрирует нового пользователя.
-     *
-     * @param login    логин.
-     * @param password пароль.
-     * @return true, если регистрация успешна, false, если пользователь уже существует или произошла ошибка БД.
-     */
     @Override
     @Loggable
     @Auditable(action = "REGISTER_USER")
     public boolean registerUser(String login, String password) {
-        try {
-            if (userRepository.existsByLogin(login)) {
-                return false;
-            }
-
-            User newUser = new User(login, password);
-            userRepository.save(newUser);
-            return true;
-
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка БД при регистрации пользователя: " + e.getMessage());
-            e.printStackTrace();
+        if (userRepository.existsByLogin(login)) {
             return false;
         }
+
+        User newUser = new User(login, password);
+        userRepository.save(newUser);
+        return true;
     }
 
-    /**
-     * Выполняет вход пользователя в систему.
-     *
-     * @param login    логин.
-     * @param password пароль.
-     * @return Optional с пользователем, если логин и пароль верны.
-     */
     @Override
     @Loggable
     @Auditable(action = "LOGIN_USER")
     public Optional<User> loginUser(String login, String password) {
-        try {
-            Optional<User> userOpt = userRepository.findByLogin(login);
+        Optional<User> userOpt = userRepository.findByLogin(login);
 
-            if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
-                return userOpt;
-            }
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка БД при входе пользователя: " + e.getMessage());
-            e.printStackTrace();
+        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+            return userOpt;
         }
-
         return Optional.empty();
     }
 }

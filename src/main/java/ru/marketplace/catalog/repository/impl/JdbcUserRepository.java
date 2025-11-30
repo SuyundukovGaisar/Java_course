@@ -1,86 +1,68 @@
 package ru.marketplace.catalog.repository.impl;
 
-import ru.marketplace.catalog.db.ConnectionFactory;
-import ru.marketplace.catalog.exception.RepositoryException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
+import ru.marketplace.catalog.exception.MarketplaceDataException;
 import ru.marketplace.catalog.model.User;
 import ru.marketplace.catalog.repository.UserRepository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Реализация репозитория пользователей с использованием JDBC.
- * Выполняет SQL-запросы к PostgreSQL.
+ * Реализация репозитория пользователей с использованием Spring JDBC.
  */
+@Repository
 public class JdbcUserRepository implements UserRepository {
 
-    private final ConnectionFactory connectionFactory;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final String SAVE_SQL = "INSERT INTO marketplace.users (login, password) VALUES (?, ?)";
-    private static final String FIND_BY_LOGIN_SQL = "SELECT id, login, password FROM marketplace.users WHERE login = ?";
-    private static final String EXISTS_BY_LOGIN_SQL = "SELECT 1 FROM marketplace.users WHERE login = ?";
-
-    public JdbcUserRepository(ConnectionFactory connectionFactory) {
-        this.connectionFactory = connectionFactory;
+    public JdbcUserRepository(NamedParameterJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private static final RowMapper<User> USER_ROW_MAPPER = (rs, rowNum) -> new User(
+            rs.getString("login"),
+            rs.getString("password")
+    );
+
     @Override
-    public void save(User user) throws RepositoryException {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SAVE_SQL)) {
-
-            statement.setString(1, user.getLogin());
-            statement.setString(2, user.getPassword());
-            statement.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при сохранении пользователя в БД", e);
+    public void save(User user) {
+        try {
+            String sql = "INSERT INTO marketplace.users (login, password) VALUES (:login, :password)";
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("login", user.getLogin())
+                    .addValue("password", user.getPassword());
+            jdbcTemplate.update(sql, params);
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при сохранении пользователя: " + user.getLogin(), e);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Optional<User> findByLogin(String login) throws RepositoryException {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_BY_LOGIN_SQL)) {
-
-            statement.setString(1, login);
-            try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(new User(
-                            rs.getString("login"),
-                            rs.getString("password")
-                    ));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при поиске пользователя по логину", e);
+    public Optional<User> findByLogin(String login) {
+        try {
+            String sql = "SELECT login, password FROM marketplace.users WHERE login = :login";
+            List<User> users = jdbcTemplate.query(sql, new MapSqlParameterSource("login", login),
+                    USER_ROW_MAPPER);
+            return users.stream().findFirst();
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при поиске пользователя: " + login, e);
         }
-        return Optional.empty();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public boolean existsByLogin(String login) throws RepositoryException {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(EXISTS_BY_LOGIN_SQL)) {
-
-            statement.setString(1, login);
-            try (ResultSet rs = statement.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при проверке существования пользователя", e);
+    public boolean existsByLogin(String login) {
+        try {
+            String sql = "SELECT count(*) FROM marketplace.users WHERE login = :login";
+            Integer count = jdbcTemplate.queryForObject(sql, new MapSqlParameterSource("login",
+                    login), Integer.class);
+            return count != null && count > 0;
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка проверки пользователя: " + login, e);
         }
     }
 }

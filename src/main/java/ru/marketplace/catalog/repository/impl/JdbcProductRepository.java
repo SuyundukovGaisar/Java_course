@@ -1,143 +1,124 @@
 package ru.marketplace.catalog.repository.impl;
 
-import ru.marketplace.catalog.db.ConnectionFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+import ru.marketplace.catalog.exception.MarketplaceDataException;
 import ru.marketplace.catalog.model.Product;
 import ru.marketplace.catalog.repository.ProductRepository;
-import ru.marketplace.catalog.exception.RepositoryException;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Реализация ProductRepository с использованием JDBC для работы с PostgreSQL.
+ * Реализация репозитория товаров с использованием Spring JDBC.
+ * Выполняет SQL-запросы к PostgreSQL через {@link NamedParameterJdbcTemplate}.
  */
+@Repository
 public class JdbcProductRepository implements ProductRepository {
 
-    private final ConnectionFactory connectionFactory;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final String FIND_ALL_SQL = "SELECT id, category, brand, price FROM marketplace.products";
-    private static final String FIND_BY_ID_SQL = "SELECT id, category, brand, price FROM marketplace.products" +
-            " WHERE id = ?";
-    private static final String SAVE_SQL = "INSERT INTO marketplace.products (category, brand, price) " +
-            "VALUES (?, ?, ?)";
-    private static final String UPDATE_SQL = "UPDATE marketplace.products SET category = ?," +
-            " brand = ?, price = ? WHERE id = ?";
-    private static final String DELETE_BY_ID_SQL = "DELETE FROM marketplace.products WHERE id = ?";
-    private static final String EXISTS_BY_ID_SQL = "SELECT 1 FROM marketplace.products WHERE id = ?";
-
-    public JdbcProductRepository(ConnectionFactory connectionFactory) {
-        this.connectionFactory = connectionFactory;
-    }
-
-    @Override
-    public void save(Product product) throws RepositoryException {
-        if (product.getId() == 0) {
-            try (Connection connection = connectionFactory.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(SAVE_SQL,
-                         Statement.RETURN_GENERATED_KEYS)) {
-
-                statement.setString(1, product.getCategory());
-                statement.setString(2, product.getBrand());
-                statement.setInt(3, product.getPrice());
-                statement.executeUpdate();
-
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    product.setId(generatedKeys.getLong(1));
-                }
-
-            } catch (SQLException e) {
-                throw new RepositoryException("Ошибка при сохранении продукта", e);
-            }
-        } else {
-            try (Connection connection = connectionFactory.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
-
-                statement.setString(1, product.getCategory());
-                statement.setString(2, product.getBrand());
-                statement.setInt(3, product.getPrice());
-                statement.setLong(4, product.getId());
-                statement.executeUpdate();
-
-            } catch (SQLException e) {
-                throw new RepositoryException("Ошибка при обновлении продукта", e);
-            }
-        }
-    }
-
-    @Override
-    public List<Product> findAll() throws RepositoryException {
-        List<Product> products = new ArrayList<>();
-        try (Connection connection = connectionFactory.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery(FIND_ALL_SQL)) {
-
-            while (rs.next()) {
-                products.add(mapRowToProduct(rs));
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при получении всех продуктов", e);
-        }
-        return products;
-    }
-
-    @Override
-    public Optional<Product> findById(long id) throws RepositoryException {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-
-            statement.setLong(1, id);
-            try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapRowToProduct(rs));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при поиске продукта по ID", e);
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean deleteById(long id) throws RepositoryException {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(DELETE_BY_ID_SQL)) {
-
-            statement.setLong(1, id);
-            int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
-
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при удалении продукта", e);
-        }
-    }
-
-    @Override
-    public boolean existsById(long id) throws RepositoryException {
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(EXISTS_BY_ID_SQL)) {
-
-            statement.setLong(1, id);
-            try (ResultSet rs = statement.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Ошибка при проверке существования продукта", e);
-        }
+    /**
+     * Конструктор для внедрения зависимостей.
+     *
+     * @param jdbcTemplate шаблон Spring JDBC для выполнения запросов с именованными параметрами.
+     */
+    public JdbcProductRepository(NamedParameterJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
-     * Вспомогательный метод для преобразования строки из ResultSet в объект Product.
+     * Маппер для преобразования строки ResultSet в объект Product.
      */
-    private Product mapRowToProduct(ResultSet rs) throws SQLException {
-        // Теперь используем новый конструктор, который принимает ID
-        return new Product(
-                rs.getLong("id"),
-                rs.getString("category"),
-                rs.getString("brand"),
-                rs.getInt("price")
-        );
+    private static final RowMapper<Product> PRODUCT_ROW_MAPPER = (rs, rowNum) -> new Product(
+            rs.getLong("id"),
+            rs.getString("category"),
+            rs.getString("brand"),
+            rs.getInt("price")
+    );
+
+    @Override
+    public void save(Product product) {
+        try {
+            if (product.getId() == 0) {
+                String sql = "INSERT INTO marketplace.products (category, brand, price) VALUES " +
+                        "(:category, :brand, :price)";
+                MapSqlParameterSource params = new MapSqlParameterSource()
+                        .addValue("category", product.getCategory())
+                        .addValue("brand", product.getBrand())
+                        .addValue("price", product.getPrice());
+
+                KeyHolder keyHolder = new GeneratedKeyHolder();
+                jdbcTemplate.update(sql, params, keyHolder, new String[]{"id"});
+
+                // Устанавливаем сгенерированный ID обратно в объект
+                Number key = keyHolder.getKey();
+                if (key != null) {
+                    product.setId(key.longValue());
+                }
+            } else {
+                String sql = "UPDATE marketplace.products SET category = :category, brand = :brand, " +
+                        "price = :price WHERE id = :id";
+                MapSqlParameterSource params = new MapSqlParameterSource()
+                        .addValue("id", product.getId())
+                        .addValue("category", product.getCategory())
+                        .addValue("brand", product.getBrand())
+                        .addValue("price", product.getPrice());
+                jdbcTemplate.update(sql, params);
+            }
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при сохранении продукта: " + product, e);
+        }
+    }
+
+    @Override
+    public List<Product> findAll() {
+        try {
+            String sql = "SELECT id, category, brand, price FROM marketplace.products";
+            return jdbcTemplate.query(sql, PRODUCT_ROW_MAPPER);
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при получении списка продуктов", e);
+        }
+    }
+
+    @Override
+    public Optional<Product> findById(long id) {
+        try {
+            String sql = "SELECT id, category, brand, price FROM marketplace.products WHERE id = :id";
+            List<Product> products = jdbcTemplate.query(sql, new MapSqlParameterSource("id", id),
+                    PRODUCT_ROW_MAPPER);
+            return products.stream().findFirst();
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при поиске продукта с ID: " + id, e);
+        }
+    }
+
+    @Override
+    public boolean deleteById(long id) {
+        try {
+            String sql = "DELETE FROM marketplace.products WHERE id = :id";
+            int rowsAffected = jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
+            return rowsAffected > 0;
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при удалении продукта с ID: " + id, e);
+        }
+    }
+
+    @Override
+    public boolean existsById(long id) {
+        try {
+            String sql = "SELECT count(*) FROM marketplace.products WHERE id = :id";
+            Integer count = jdbcTemplate.queryForObject(sql, new MapSqlParameterSource("id", id),
+                    Integer.class);
+            return count != null && count > 0;
+        } catch (DataAccessException e) {
+            throw new MarketplaceDataException("Ошибка при проверке существования продукта с ID: " + id, e);
+        }
     }
 }

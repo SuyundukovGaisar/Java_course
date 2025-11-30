@@ -1,8 +1,8 @@
 package ru.marketplace.catalog.service.impl;
 
+import org.springframework.stereotype.Service;
 import ru.marketplace.catalog.aop.annotations.Auditable;
 import ru.marketplace.catalog.aop.annotations.Loggable;
-import ru.marketplace.catalog.exception.RepositoryException;
 import ru.marketplace.catalog.model.Product;
 import ru.marketplace.catalog.repository.ProductRepository;
 import ru.marketplace.catalog.service.ProductService;
@@ -15,14 +15,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Стандартная реализация сервиса для управления продуктами.
- * Содержит бизнес-логику и использует репозиторий для доступа к данным.
+ * Реализация сервиса продуктов.
  */
+@Service
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+
     private final Map<String, List<Product>> cache = new HashMap<>();
 
+    /**
+     * Конструктор для внедрения репозитория.
+     */
     public ProductServiceImpl(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
@@ -31,43 +35,26 @@ public class ProductServiceImpl implements ProductService {
     @Loggable
     @Auditable(action = "ADD_PRODUCT")
     public void addProduct(Product product) {
-        try {
-            productRepository.save(product);
-            invalidateCache();
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка при добавлении продукта: " + e.getMessage());
-            e.printStackTrace();
-        }
+        productRepository.save(product);
+        invalidateCache();
     }
 
     @Override
     @Loggable
     public List<Product> getAllProducts() {
-        try {
-            return productRepository.findAll();
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка при получении списка продуктов: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>(); // Возвращаем пустой список при ошибке
-        }
+        return productRepository.findAll();
     }
 
     @Override
     public Optional<Product> findById(long id) {
-        try {
-            return productRepository.findById(id);
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка при поиске продукта по ID: " + e.getMessage());
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        return productRepository.findById(id);
     }
 
     @Override
     @Loggable
     @Auditable(action = "UPDATE_PRODUCT")
     public boolean updateProduct(long id, String newCategory, String newBrand, int newPrice) {
-        Optional<Product> productOpt = findById(id);
+        Optional<Product> productOpt = productRepository.findById(id);
 
         if (productOpt.isPresent()) {
             Product product = productOpt.get();
@@ -75,15 +62,9 @@ public class ProductServiceImpl implements ProductService {
             product.setBrand(newBrand);
             product.setPrice(newPrice);
 
-            try {
-                productRepository.save(product);
-                invalidateCache();
-                return true;
-            } catch (RepositoryException e) {
-                System.err.println("Ошибка при обновлении продукта: " + e.getMessage());
-                e.printStackTrace();
-                return false;
-            }
+            productRepository.save(product);
+            invalidateCache();
+            return true;
         }
         return false;
     }
@@ -92,14 +73,9 @@ public class ProductServiceImpl implements ProductService {
     @Loggable
     @Auditable(action = "DELETE_PRODUCT")
     public boolean deleteProduct(long id) {
-        try {
-            if (productRepository.deleteById(id)) {
-                invalidateCache();
-                return true;
-            }
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка при удалении продукта: " + e.getMessage());
-            e.printStackTrace();
+        if (productRepository.deleteById(id)) {
+            invalidateCache();
+            return true;
         }
         return false;
     }
@@ -112,27 +88,21 @@ public class ProductServiceImpl implements ProductService {
             return cache.get(cacheKey);
         }
 
-        try {
-            List<Product> allProducts = productRepository.findAll();
-            List<Product> result;
+        List<Product> allProducts = productRepository.findAll();
+        List<Product> result;
 
-            switch (filterType) {
-                case "category" -> result = allProducts.stream()
-                        .filter(p -> p.getCategory().equalsIgnoreCase(value))
-                        .collect(Collectors.toList());
-                case "brand" -> result = allProducts.stream()
-                        .filter(p -> p.getBrand().equalsIgnoreCase(value))
-                        .collect(Collectors.toList());
-                default -> result = List.of();
-            }
-
-            cache.put(cacheKey, result);
-            return result;
-        } catch (RepositoryException e) {
-            System.err.println("Ошибка при фильтрации продуктов: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
+        switch (filterType) {
+            case "category" -> result = allProducts.stream()
+                    .filter(p -> p.getCategory().equalsIgnoreCase(value))
+                    .collect(Collectors.toList());
+            case "brand" -> result = allProducts.stream()
+                    .filter(p -> p.getBrand().equalsIgnoreCase(value))
+                    .collect(Collectors.toList());
+            default -> result = new ArrayList<>();
         }
+
+        cache.put(cacheKey, result);
+        return result;
     }
 
     private void invalidateCache() {

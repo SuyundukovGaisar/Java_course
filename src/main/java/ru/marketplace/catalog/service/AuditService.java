@@ -1,21 +1,26 @@
 package ru.marketplace.catalog.service;
 
+import ru.marketplace.catalog.model.AuditLog;
 import java.util.List;
 
 /**
- * Сервис для управления логикой аудита.
+ * Интерфейс сервиса аудита.
+ * Отвечает за фиксацию действий пользователей.
  */
 public interface AuditService {
+
     /**
-     * Формирует и сохраняет запись о действии пользователя.
+     * Логирует действие пользователя.
+     *
      * @param username имя пользователя.
-     * @param action описание действия.
+     * @param action   описание действия.
      */
     void logAction(String username, String action);
 
     /**
-     * Возвращает все записи аудита.
-     * @return список всех записей.
+     * Возвращает полную историю действий.
+     *
+     * @return список записей аудита.
      */
-    List<String> getAuditLog();
+    List<AuditLog> getAuditLog();
 }

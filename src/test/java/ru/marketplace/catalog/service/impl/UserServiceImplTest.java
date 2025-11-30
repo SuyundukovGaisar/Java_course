@@ -1,17 +1,14 @@
+package ru.marketplace.catalog.service.impl;
+
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.marketplace.catalog.aop.AuditAspect;
-import ru.marketplace.catalog.exception.RepositoryException;
 import ru.marketplace.catalog.model.User;
 import ru.marketplace.catalog.repository.UserRepository;
-import ru.marketplace.catalog.service.AuditService;
-import ru.marketplace.catalog.service.impl.UserServiceImpl;
 
 import java.util.Optional;
 
@@ -24,20 +21,12 @@ class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private AuditService auditService;
-
     @InjectMocks
     private UserServiceImpl userService;
 
-    @BeforeEach
-    void setUp() {
-        AuditAspect.setAuditService(auditService);
-    }
-
     @Test
     @DisplayName("Регистрация успешна, если пользователя еще нет")
-    void registerUser_shouldSucceed_whenLoginIsUnique() throws RepositoryException {
+    void registerUser_shouldSucceed_whenLoginIsUnique() {
         String login = "newUser";
         String password = "123";
 
@@ -51,7 +40,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Регистрация провалена, если пользователь уже есть")
-    void registerUser_shouldFail_whenLoginExists() throws RepositoryException {
+    void registerUser_shouldFail_whenLoginExists() {
         String login = "existingUser";
 
         when(userRepository.existsByLogin(login)).thenReturn(true);
@@ -64,7 +53,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Логин успешен при правильном пароле")
-    void loginUser_shouldSucceed_withCorrectCredentials() throws RepositoryException {
+    void loginUser_shouldSucceed_withCorrectCredentials() {
         String login = "user";
         String password = "pass";
         User userFromDb = new User(login, password);
