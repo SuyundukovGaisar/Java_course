@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="3-create-users-table" author="your_name">
+        <createSequence sequenceName="users_id_seq"
+                        schemaName="marketplace"
+                        incrementBy="1"
+                        startValue="1"/>
+
+        <createTable tableName="users" schemaName="marketplace">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="users_id_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="login" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="users" schemaName="marketplace"/>
+            <dropSequence sequenceName="users_id_seq" schemaName="marketplace"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
