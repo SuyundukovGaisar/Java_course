@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * DTO (Data Transfer Object) для передачи данных о товаре.
+ * Используется в контроллерах для приема и отправки данных.
+ */
 public class ProductDto {
 
     private Long id;

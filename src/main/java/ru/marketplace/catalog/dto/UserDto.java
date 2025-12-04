@@ -3,6 +3,10 @@ package ru.marketplace.catalog.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * DTO (Data Transfer Object) для передачи данных о товаре.
+ * Используется в контроллерах для приема и отправки данных.
+ */
 public class UserDto {
 
     private Long id;
