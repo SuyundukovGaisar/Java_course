@@ -1,0 +1,31 @@
+### 1. Получить все продукты (GET)
+GET http://localhost:8080/products
+
+### 2. Добавить новый продукт (POST) - Должен сработать АУДИТ
+POST http://localhost:8080/products
+Content-Type: application/json
+
+{
+  "category": "Laptops",
+  "brand": "Asus",
+  "price": 1200
+}
+
+### 3. Попытка добавить невалидный продукт (Цена отрицательная) - Должна быть ошибка 400
+POST http://localhost:8080/products
+Content-Type: application/json
+
+{
+  "category": "Laptops",
+  "brand": "",
+  "price": -50
+}
+
+### 4. Регистрация пользователя (POST) - Должен сработать АУДИТ
+POST http://localhost:8080/users/register
+Content-Type: application/json
+
+{
+  "login": "admin",
+  "password": "super_secret_password"
+}

@@ -1,0 +1,9 @@
+ru\marketplace\starter\service\AuditService.class
+ru\marketplace\starter\model\AuditLog.class
+ru\marketplace\starter\aop\annotations\Auditable.class
+ru\marketplace\starter\aop\annotations\Loggable.class
+ru\marketplace\starter\aop\LoggingAspect.class
+ru\marketplace\starter\aop\AuditAspect.class
+ru\marketplace\starter\annotation\EnableAudit.class
+ru\marketplace\starter\config\LoggingAutoConfiguration.class
+ru\marketplace\starter\config\AuditConfiguration.class

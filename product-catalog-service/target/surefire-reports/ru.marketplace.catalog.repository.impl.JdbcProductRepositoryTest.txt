@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: ru.marketplace.catalog.repository.impl.JdbcProductRepositoryTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.445 s -- in ru.marketplace.catalog.repository.impl.JdbcProductRepositoryTest
