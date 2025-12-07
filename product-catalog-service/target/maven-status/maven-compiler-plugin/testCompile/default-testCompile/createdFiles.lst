@@ -1,0 +1,4 @@
+ru\marketplace\catalog\repository\impl\JdbcProductRepositoryTest.class
+ru\marketplace\catalog\service\impl\UserServiceImplTest.class
+ru\marketplace\catalog\controller\ProductControllerTest.class
+ru\marketplace\catalog\service\impl\ProductServiceImplTest.class

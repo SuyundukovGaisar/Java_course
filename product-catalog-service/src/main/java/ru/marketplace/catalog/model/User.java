@@ -1,0 +1,50 @@
+package ru.marketplace.catalog.model;
+
+import java.util.Objects;
+/**
+ * Модель данных, представляющая пользователя системы.
+ * Класс является неизменяемым (immutable) после создания.
+ */
+public class User {
+    private String login;
+    private String password;
+
+    public User(){}
+
+    /**
+     * Создает новый экземпляр пользователя.
+     * @param login    уникальный логин пользователя.
+     * @param password пароль пользователя.
+     */
+    public User(String login, String password) {
+        this.login = login;
+        this.password = password;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User user)) return false;
+        return Objects.equals(login, user.login) && Objects.equals(password, user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(login, password);
+    }
+}
