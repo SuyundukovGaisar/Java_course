@@ -57,7 +57,6 @@ public class JdbcProductRepository implements ProductRepository {
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 jdbcTemplate.update(sql, params, keyHolder, new String[]{"id"});
 
-                // Устанавливаем сгенерированный ID обратно в объект
                 Number key = keyHolder.getKey();
                 if (key != null) {
                     product.setId(key.longValue());
