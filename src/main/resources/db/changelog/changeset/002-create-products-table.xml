@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="2-create-products-table" author="your_name">
+        <createSequence sequenceName="products_id_seq"
+                        schemaName="marketplace"
+                        incrementBy="1"
+                        startValue="1"/>
+
+        <createTable tableName="products" schemaName="marketplace">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="products_id_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="brand" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="products" schemaName="marketplace"/>
+            <dropSequence sequenceName="products_id_seq" schemaName="marketplace"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,33 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="create-audit-table" author="student">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="marketplace" tableName="audit_logs"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="audit_logs" schemaName="marketplace">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="event_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="audit_logs" schemaName="marketplace"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
