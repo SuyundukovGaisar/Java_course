@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="4-insert-initial-data" author="SuyundukovGaisar">
+        <insert tableName="products" schemaName="marketplace">
+            <column name="category" value="Electronics"/>
+            <column name="brand" value="Apple"/>
+            <column name="price" value="999"/>
+        </insert>
+        <insert tableName="products" schemaName="marketplace">
+            <column name="category" value="Electronics"/>
+            <column name="brand" value="Samsung"/>
+            <column name="price" value="799"/>
+        </insert>
+        <insert tableName="products" schemaName="marketplace">
+            <column name="category" value="Books"/>
+            <column name="brand" value="O'Reilly"/>
+            <column name="price" value="45"/>
+        </insert>
+
+        <insert tableName="users" schemaName="marketplace">
+            <column name="login" value="admin"/>
+            <column name="password" value="admin"/>
+        </insert>
+        <rollback>
+            <delete tableName="products" schemaName="marketplace"/>
+            <delete tableName="users" schemaName="marketplace"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,9 @@
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\aop\AuditAspect.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\aop\LoggingAspect.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\model\AuditLog.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\annotation\EnableAudit.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\aop\annotations\Auditable.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\config\AuditConfiguration.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\aop\annotations\Loggable.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\service\AuditService.java
+D:\Java Projects\Product_Catalog_Service\logging-starter\src\main\java\ru\marketplace\starter\config\LoggingAutoConfiguration.java

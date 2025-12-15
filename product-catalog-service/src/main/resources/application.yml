@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: product-catalog-service
+
+  # Настройки подключения к базе данных
+  datasource:
+    url: jdbc:postgresql://localhost:5433/marketplace_db
+    username: marketplace_user
+    password: supersecret
+    driver-class-name: org.postgresql.Driver
+
+  # Настройки миграций Liquibase
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    # Схема, где будут создаваться таблицы приложения
+    default-schema: marketplace
+    # Схема, где Liquibase хранит свои служебные таблицы
+    liquibase-schema: liquibase_service
+    enabled: true
+
+# Настройки Swagger UI (документация API)
+springdoc:
+  swagger-ui:
+    # Путь, по которому будет доступен UI
+    path: /swagger-ui.html
+    # Сортировка методов в алфавитном порядке
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
